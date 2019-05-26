@@ -23,7 +23,7 @@ class CheckedEndpoint {
     fun respondSuccess(): Nothing =
         throw EndpointException(HttpStatusCode.OK, "")
 
-    inline fun <reified E: Exception, R> handle(responseCode: HttpStatusCode, body: () -> R) =
+    suspend inline fun <reified E: Exception, R> handle(responseCode: HttpStatusCode, crossinline body: suspend () -> R) =
         try{
             body()
         } catch (e: Exception){
@@ -33,7 +33,7 @@ class CheckedEndpoint {
                 throw e
         }
 
-    inline fun <reified E: Exception> handleUnit(responseCode: HttpStatusCode, body: () -> Unit) =
+    suspend inline fun <reified E: Exception> handleUnit(responseCode: HttpStatusCode, crossinline body: suspend () -> Unit) =
         try{
             body()
         } catch (e: Exception){
@@ -46,7 +46,7 @@ class CheckedEndpoint {
 
 suspend inline fun PipelineContext<Unit, ApplicationCall>.checked(
     catchAll: HttpStatusCode? = null,
-    crossinline builder: CheckedEndpoint.() -> Unit
+    crossinline builder: suspend CheckedEndpoint.() -> Unit
 ) {
     try {
         builder(CheckedEndpoint())
